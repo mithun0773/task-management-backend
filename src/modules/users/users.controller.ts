@@ -1,37 +1,34 @@
-import {
-  Injectable,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { Controller, Get, Param, Patch, Body, UseGuards } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
-@Injectable()
-export class UsersService {
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-  ) {}
+@ApiTags('Users')
+@ApiBearerAuth()
+@Controller('users')
+@UseGuards(JwtAuthGuard) // ✅ All authenticated users can access
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
 
-  async create(userData: Partial<User>): Promise<User> {
-    const existingUser = await this.userRepository.findOne({
-      where: { email: userData.email },
-    });
-    if (existingUser) {
-      throw new ConflictException('Email already exists');
-    }
-    const newUser = this.userRepository.create(userData);
-    return this.userRepository.save(newUser);
+  // ✅ All users can view team members
+  @Get()
+  findAll() {
+    return this.usersService.findAll();
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { email } });
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findById(id);
   }
 
-  async findById(id: string): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) throw new NotFoundException('User not found');
-    return user;
+  // ✅ Users can only update their own profile
+  @Patch('me')
+  updateProfile(
+    @CurrentUser('id') userId: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(userId, updateUserDto);
   }
 }

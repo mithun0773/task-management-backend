@@ -47,21 +47,21 @@ export class Task {
   updated_at: Date;
 
   @ManyToOne(() => Project, (project) => project.tasks, { onDelete: 'CASCADE' })
-  @JoinColumn({name:'project_id'})
+  @JoinColumn({ name: 'project_id' })
   project: Project;
 
   @Column({ name: 'project_id' })
   project_id: string;
 
-  @ManyToOne(() => User, (user) => user.assigned_tasks, { nullable: true })
-  @JoinColumn({name:'assignee_id'})
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'assignee_id' })
   assignee: User;
 
   @Column({ name: 'assignee_id', nullable: true })
   assignee_id: string;
 
   @ManyToOne(() => User)
-  @JoinColumn({name:'creator_id'})
+  @JoinColumn({ name: 'creator_id' })
   creator: User;
 
   @Column({ name: 'creator_id' })

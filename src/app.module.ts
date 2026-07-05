@@ -3,13 +3,17 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
-
 import { User } from './modules/users/entities/user.entity';
 import { Project } from './modules/projects/entities/project.entity';
 import { Task } from './modules/tasks/entities/task.entity';
 import { Attachment } from './modules/attachments/entities/attachment.entity';
 import { Notification } from './modules/notifications/entities/notification.entity';
-
+import { ProjectsModule } from './modules/projects/projects.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { TasksModule } from './modules/tasks/task.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { Report } from './modules/reports/entities/report.entity';
+import { ReportComment } from './modules/reports/entities/report-comment-entity';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -50,7 +54,15 @@ import { Notification } from './modules/notifications/entities/notification.enti
           username,
           password,
           database,
-          entities: [User, Project, Task, Attachment, Notification],
+          entities: [
+            User,
+            Project,
+            Task,
+            Attachment,
+            Notification,
+            Report,
+            ReportComment,
+          ],
           synchronize: true,
           logging: false,
         };
@@ -59,6 +71,10 @@ import { Notification } from './modules/notifications/entities/notification.enti
 
     UsersModule,
     AuthModule,
+    ProjectsModule,
+    DashboardModule,
+    TasksModule,
+    ReportsModule,
   ],
 })
 export class AppModule {}
