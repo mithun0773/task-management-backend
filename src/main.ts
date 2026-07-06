@@ -33,7 +33,12 @@ WHERE schemaname='public'
     }),
   );
   app.enableCors({
-    origin: ['http://localhost:5173', process.env.FRONTEND_URL],
+    origin: [
+      'http://localhost:5173',
+      'https://taskmanagement-taskpro.netlify.app',
+    ],
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
 
