@@ -25,7 +25,6 @@ import { ReportComment } from './modules/reports/entities/report-comment-entity'
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        // 🎯 Using YOUR variable names from .env
         const host = configService.get<string>('DB_HOST');
         const port = parseInt(
           configService.get<string>('DB_PORT') || '5433',
@@ -34,19 +33,9 @@ import { ReportComment } from './modules/reports/entities/report-comment-entity'
         const username = configService.get<string>('DB_USERNAME');
         const password = configService.get<string>('DB_PASSWORD');
         const database = configService.get<string>('DB_DATABASE');
-
-        console.log('========== DATABASE CONFIG ==========');
-        console.log('HOST      :', host);
-        console.log('PORT      :', port);
-        console.log('USERNAME  :', username);
-        console.log('PASSWORD  :', password ? '********' : '❌ UNDEFINED');
-        console.log('DATABASE  :', database);
-        console.log('=====================================');
-
         if (!password) {
           throw new Error('❌ DB_PASSWORD is missing in your .env file!');
         }
-
         return {
           type: 'postgres',
           host,
@@ -54,6 +43,9 @@ import { ReportComment } from './modules/reports/entities/report-comment-entity'
           username,
           password,
           database,
+          ssl: {
+            rejectUnauthorized: false,
+          },
           entities: [
             User,
             Project,
@@ -63,7 +55,7 @@ import { ReportComment } from './modules/reports/entities/report-comment-entity'
             Report,
             ReportComment,
           ],
-          synchronize: true,
+          synchronize: false,
           logging: false,
         };
       },

@@ -8,11 +8,10 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 @ApiTags('Users')
 @ApiBearerAuth()
 @Controller('users')
-@UseGuards(JwtAuthGuard) // ✅ All authenticated users can access
+@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // ✅ All users can view team members
   @Get()
   findAll() {
     return this.usersService.findAll();
@@ -23,8 +22,7 @@ export class UsersController {
     return this.usersService.findById(id);
   }
 
-  // ✅ Users can only update their own profile
-  @Patch('me')
+  @Patch(':id')
   updateProfile(
     @CurrentUser('id') userId: string,
     @Body() updateUserDto: UpdateUserDto,

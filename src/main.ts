@@ -2,23 +2,38 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DataSource } from 'typeorm';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const dataSource = app.get(DataSource);
+
+  console.log(
+    await dataSource.query(`
+SELECT current_database(),
+       current_schema(),
+       current_user
+`),
+  );
+
+  console.log(
+    await dataSource.query(`
+SELECT tablename
+FROM pg_tables
+WHERE schemaname='public'
+`),
+  );
   // Enable Global Validation Pipe (Checks DTOs automatically)
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Strips properties not in DTO
-      forbidNonWhitelisted: true, // Throws error if extra properties sent
-      transform: true, // Auto-transforms payloads to DTO objects
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
     }),
   );
-
-  // Enable CORS so React frontend can talk to backend
   app.enableCors({
-    origin: 'http://localhost:5173', // Your Vite frontend URL
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: ['http://localhost:5173', process.env.FRONTEND_URL],
     credentials: true,
   });
 
@@ -34,7 +49,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  console.log(`🚀 Server Running: http://localhost:${port}`);
+  console.log(`🚀 Server running on port ${port}`);
   console.log(`📚 Swagger Docs: http://localhost:${port}/api`);
 }
 bootstrap();

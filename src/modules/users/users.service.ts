@@ -42,10 +42,38 @@ export class UsersService {
     });
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { email } });
-  }
+  // async findByEmail(email: string): Promise<User | null> {
+  //   return this.userRepository.findOne({ where: { email } });
+  // }
 
+  async findByEmail(email: string): Promise<User | null> {
+    console.log('=== Repository Test ===');
+
+    // 1. Raw SQL through repository
+    const raw = await this.userRepository.query(
+      'SELECT current_database(), current_schema()',
+    );
+    console.log(raw);
+
+    // 2. List tables visible to this repository
+    const tables = await this.userRepository.query(`
+    SELECT tablename
+    FROM pg_tables
+    WHERE schemaname = 'public'
+  `);
+    console.log(tables);
+
+    // 3. Query users using raw SQL
+    const users = await this.userRepository.query(
+      'SELECT id, email FROM public.users',
+    );
+    console.log(users);
+
+    // 4. Original query
+    return this.userRepository.findOne({
+      where: { email },
+    });
+  }
   async findById(id: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
@@ -65,18 +93,14 @@ export class UsersService {
       }
     }
 
-    // ✅ FIX: Extract 'password' from the DTO so it stays separate from the User entity
     const { password, ...dtoWithoutPassword } = updateUserDto;
 
-    // Create the update object using only valid User properties
     const dataToUpdate: Partial<User> = { ...dtoWithoutPassword };
 
-    // If a new password was provided, hash it and add it to the update object
     if (password) {
       dataToUpdate.password_hash = await bcrypt.hash(password, 10);
     }
 
-    // Apply the changes to the user entity and save
     Object.assign(user, dataToUpdate);
     return this.userRepository.save(user);
   }
